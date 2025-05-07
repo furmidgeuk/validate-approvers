@@ -9,3 +9,4 @@ jobs:
     uses: ./.github/workflows/validate-approvers-wf.yml
     with:
       teams: '[{"team": "sme", "approvals": 2}, {"team": "quality", "approvals": 1}]'
+      github-token: ${{ secrets.SAML_GITHUB_TOKEN }}
