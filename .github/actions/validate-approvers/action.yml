@@ -3,7 +3,7 @@ description: "Enforce custom PR approval policy based on team memberships"
 author: "Your Name"
 inputs:
   teams:
-    description: "JSON array of teams and required approvals. Example: [{ 'team': 'sme', 'approvals': 2 }, { 'team': 'NN-DataCore-Qualification', 'approvals': 1 }]"
+    description: "JSON array of teams and required approvals. Example: [{ 'team': 'sme', 'approvals': 2 }, { 'team': 'quality', 'approvals': 1 }]"
     required: true
 outputs:
   result:
