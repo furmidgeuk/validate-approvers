@@ -21,7 +21,8 @@ jobs:
       - name: Check Secret
         run: echo ${{ secrets.github-token }}
       - name: Debug Input
-        run: echo ${{ inputs.teams }}
+        run: echo '${{ inputs.teams }}'
+
 
       - name: Validate Approvers
         uses: actions/github-script@v6
