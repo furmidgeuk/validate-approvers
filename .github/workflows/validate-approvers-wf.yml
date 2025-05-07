@@ -3,10 +3,10 @@ name: Validate PR Approvers - Workflow Call
 on:
   workflow_call:
     inputs:
-      teams:
+      teams-file:
         required: true
         type: string
-        description: "JSON string representing the teams and required approvals."
+        description: "Path to JSON file representing the teams and required approvals."
     secrets:
       github-token:
           required: true
@@ -18,24 +18,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check Secret
-        run: echo ${{ secrets.github-token }}
-
       - name: Validate Approvers
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.github-token }}
           script: |
+            const fs = require('fs');
             const OWNER = context.repo.owner;
             const REPO = context.repo.repo;
             const PR_NUMBER = context.payload.pull_request.number;
-            const teamsInput = core.getInput("teams");
+            const teamsFilePath = core.getInput("teams-file");
 
             let teams;
             try {
-              teams = JSON.parse(teamsInput);
+              const teamsContent = fs.readFileSync(teamsFilePath, 'utf8');
+              teams = JSON.parse(teamsContent);
             } catch (error) {
-              core.setFailed(`Invalid JSON format for teams input: ${error.message}`);
+              core.setFailed(`Error reading teams file: ${error.message}`);
               return;
             }
 
