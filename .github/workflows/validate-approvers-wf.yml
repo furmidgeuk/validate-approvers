@@ -22,12 +22,10 @@ jobs:
       - name: Read Config
         id: config
         run: |
-          # Install yaml2json using npm
-          npm install -g yaml2json
-          
-          # Convert yaml to json and extract teams
-          TEAMS=$(yaml2json ${{ inputs.config-path }} | jq -c '.teams')
-          echo "teams=$TEAMS" >> $GITHUB_ENV
+            npm install -g yaml2json
+
+            TEAMS=$(yaml2json ${{ inputs.config-path }} | jq -c '.teams')
+            echo "teams=$TEAMS" >> $GITHUB_ENV
 
       - name: Debug Config
         run: |
