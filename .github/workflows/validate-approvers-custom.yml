@@ -1,8 +1,14 @@
-name: Validate PR Approvers
+name: Validate PR Approvers - Custom Action
 
 on:
-  pull_request:
-    types: [submitted, edited, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      teams:
+        description: 'JSON string of teams and required approvals'
+        required: true
+        default: '[{"team": "sme", "approvals": 2}, {"team": "quality", "approvals": 1}]'
+  # pull_request:
+  #   types: [opened, edited, reopened, synchronize]
 
 jobs:
   validate-approvers:

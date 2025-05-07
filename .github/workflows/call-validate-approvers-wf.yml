@@ -2,7 +2,7 @@ name: Validate PR Approvers
 
 on:
   pull_request:
-    types: [submitted, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
   call-validate-approvers:
