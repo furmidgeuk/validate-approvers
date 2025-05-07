@@ -1,0 +1,19 @@
+name: Validate PR Approvers
+
+on:
+  pull_request:
+    types: [submitted, edited, reopened, synchronize]
+
+jobs:
+  validate-approvers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Approvers
+        uses: ./.github/actions/validate-approvers
+        with:
+          teams: '[{"team": "sme", "approvals": 2}, {"team": "quality", "approvals": 1}]'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
