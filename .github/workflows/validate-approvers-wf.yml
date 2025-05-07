@@ -19,13 +19,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Python YAML package
+        run: pip install pyyaml
+      
       - name: Read Config
         id: config
         run: |
-            npm install -g yaml2json
-
-            TEAMS=$(yaml2json ${{ inputs.config-path }} | jq -c '.teams')
-            echo "teams=$TEAMS" >> $GITHUB_ENV
+          python -c "
+          import yaml, json, os, sys
+          try:
+              with open('${{ inputs.config-path }}', 'r') as file:
+                  config = yaml.safe_load(file)
+              teams_json = json.dumps(config.get('teams', []))
+              with open(os.environ['GITHUB_ENV'], 'a') as env_file:
+                  env_file.write(f'teams={teams_json}')
+          except Exception as e:
+              print(f'Error parsing YAML: {e}', file=sys.stderr)
+              sys.exit(1)
+          "
 
       - name: Debug Config
         run: |
