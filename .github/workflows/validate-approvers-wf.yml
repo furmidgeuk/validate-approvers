@@ -15,10 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check Secret
+        run: echo ${{ secrets.SAML_GITHUB_TOKEN }}
+
       - name: Validate Approvers
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.SAML_GITHUB_TOKEN }}
+          token: ${{ secrets.SAML_GITHUB_TOKEN }}
           script: |
             const OWNER = context.repo.owner;
             const REPO = context.repo.repo;
