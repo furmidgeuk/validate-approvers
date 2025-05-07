@@ -7,10 +7,7 @@ on:
         required: true
         type: string
         description: "JSON string representing the teams and required approvals."
-      github-token:
-        required: true
-        type: string
-        description: "GitHub token for authentication."
+
 jobs:
   validate-approvers:
     runs-on: ubuntu-latest
@@ -19,12 +16,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Secret
-        run: echo ${{ inputs.github-token }}
+        run: echo ${{ secrets.github-token }}
 
       - name: Validate Approvers
         uses: actions/github-script@v6
         with:
-          github-token: ${{ inputs.github-token }}
+          github-token: ${{ secrets.github-token }}
           script: |
             const OWNER = context.repo.owner;
             const REPO = context.repo.repo;
