@@ -1,0 +1,17 @@
+name: "Validate PR Approvers"
+description: "Enforce custom PR approval policy based on team memberships"
+author: "Your Name"
+inputs:
+  teams:
+    description: "JSON array of teams and required approvals. Example: [{ 'team': 'sme', 'approvals': 2 }, { 'team': 'NN-DataCore-Qualification', 'approvals': 1 }]"
+    required: true
+outputs:
+  result:
+    description: "Result of the approval validation"
+runs:
+  using: "node16"
+  main: "index.js"
+permissions:
+  contents: read
+  pull-requests: read
+  organization: read
