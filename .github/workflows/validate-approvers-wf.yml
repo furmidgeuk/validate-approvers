@@ -27,12 +27,13 @@ jobs:
       - name: Read Config
         id: config
         run: |
-          export TEAMS=$(yq eval -o=json ${{ inputs.config-path }})
-          echo "teams=$TEAMS" >> $GITHUB_ENV
+            TEAMS=$(yq eval -o=json '.teams' ${{ inputs.config-path }} | tr -d '\n')
+            echo "teams=$TEAMS" >> $GITHUB_ENV
+  
 
       - name: Debug Config
         run: |
-          echo "Teams: ${{ env.teams }}"
+          echo  ${{ env.teams }}
 
       - name: Validate Approvers
         uses: actions/github-script@v6
