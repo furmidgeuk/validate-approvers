@@ -1,0 +1,5 @@
+teams:
+  - name: sme
+    approvals: 2
+  - name: quality
+    approvals: 1
