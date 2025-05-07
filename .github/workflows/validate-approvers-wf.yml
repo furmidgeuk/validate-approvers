@@ -21,18 +21,18 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y yq
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
 
       - name: Read Config
         id: config
         run: |
-          export TEAMS=$(yq -o=json .${{ inputs.config-path }})
+          export TEAMS=$(yq eval -o=json ${{ inputs.config-path }})
           echo "teams=$TEAMS" >> $GITHUB_ENV
 
       - name: Debug Config
         run: |
-          echo ${{ env.teams }}
+          echo "Teams: ${{ env.teams }}"
 
       - name: Validate Approvers
         uses: actions/github-script@v6
