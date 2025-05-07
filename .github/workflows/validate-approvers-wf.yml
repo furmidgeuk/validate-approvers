@@ -3,26 +3,36 @@ name: Validate PR Approvers - Workflow Call
 on:
   workflow_call:
     inputs:
-      teams:
+      config-path:
         required: true
         type: string
-        description: "JSON string representing the teams and required approvals."
+        description: "Path to the teams configuration file."
     secrets:
       github-token:
-          required: true
-          description: "GitHub token for authentication."
+        required: true
+
 jobs:
   validate-approvers:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check Secret
-        run: echo ${{ secrets.github-token }}
-      - name: Debug Input
-        run: echo '${{ inputs.teams }}'
+      - name: Install yq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yq
 
+      - name: Read Config
+        id: config
+        run: |
+          export TEAMS=$(yq -o=json .${{ inputs.config-path }})
+          echo "teams=$TEAMS" >> $GITHUB_ENV
+
+      - name: Debug Config
+        run: |
+          echo ${{ env.teams }}
 
       - name: Validate Approvers
         uses: actions/github-script@v6
@@ -32,15 +42,8 @@ jobs:
             const OWNER = context.repo.owner;
             const REPO = context.repo.repo;
             const PR_NUMBER = context.payload.pull_request.number;
-            const teamsInput = core.getInput("teams");
 
-            let teams;
-            try {
-              teams = JSON.parse(teamsInput);
-            } catch (error) {
-              core.setFailed(`Invalid JSON format for teams input: ${error.message}`);
-              return;
-            }
+            const teams = JSON.parse(process.env.teams);
 
             async function getTeamMembers(teamSlug) {
               const members = await github.rest.teams.listMembersInOrg({
@@ -60,28 +63,28 @@ jobs:
             }
 
             const reviews = await getPRReviews(PR_NUMBER);
-
             let approvalCounts = {};
+
             teams.forEach(team => {
-              approvalCounts[team.team] = 0;
+              approvalCounts[team.name] = 0;
             });
 
             for (const review of reviews) {
               for (const team of teams) {
-                const members = await getTeamMembers(team.team);
+                const members = await getTeamMembers(team.name);
                 if (members.includes(review.user.login)) {
-                  approvalCounts[team.team]++;
+                  approvalCounts[team.name]++;
                 }
               }
             }
 
             for (const team of teams) {
               const required = team.approvals;
-              const received = approvalCounts[team.team];
+              const received = approvalCounts[team.name];
 
-              console.log(`Team: ${team.team}, Required: ${required}, Received: ${received}`);
+              console.log(`Team: ${team.name}, Required: ${required}, Received: ${received}`);
 
               if (received < required) {
-                core.setFailed(`Requires at least ${required} approvals from ${team.team}. Currently: ${received}`);
+                core.setFailed(`Requires at least ${required} approvals from ${team.name}. Currently: ${received}`);
               }
             }
