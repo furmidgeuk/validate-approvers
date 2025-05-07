@@ -19,17 +19,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install yq
-        run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-
       - name: Read Config
         id: config
         run: |
-            TEAMS=$(yq eval -o=json '.teams' ${{ inputs.config-path }} | tr -d '\n')
-            echo "teams=$TEAMS" >> $GITHUB_ENV
-  
+          # Install yaml2json using npm
+          npm install -g yaml2json
+          
+          # Convert yaml to json and extract teams
+          TEAMS=$(yaml2json ${{ inputs.config-path }} | jq -c '.teams')
+          echo "teams=$TEAMS" >> $GITHUB_ENV
 
       - name: Debug Config
         run: |
