@@ -9,6 +9,6 @@ jobs:
     uses: ./.github/workflows/validate-approvers-wf.yml
     with:
       # teams: '[{"team":"sme","approvals":2},{"team":"quality","approvals":1}]'
-      teams-file: 'teams-config.json'  # Pass file path instead of JSON string
+      teams-file: '${{ github.workspace }}/teams-config.json'
     secrets:
       github-token: ${{ secrets.SAML_GITHUB_TOKEN }}
