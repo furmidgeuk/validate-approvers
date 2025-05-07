@@ -6,6 +6,6 @@ on:
 
 jobs:
   call-validate-approvers:
-    uses: ./.github/workflows/.reusable/validate-approvers.yml
+    uses: ./.github/workflows/validate-approvers-wf.yml
     with:
       teams: '[{"team": "sme", "approvals": 2}, {"team": "quality", "approvals": 1}]'
