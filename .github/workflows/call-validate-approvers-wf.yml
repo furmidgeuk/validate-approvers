@@ -2,10 +2,10 @@ name: Validate PR Approvers
 
 on:
   pull_request:
-    types: [submitted, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
   call-validate-approvers:
-    uses: ./.github/workflows/.reusable/validate-approvers.yml
+    uses: ./.github/workflows/validate-approvers-wf.yml
     with:
       teams: '[{"team": "sme", "approvals": 2}, {"team": "quality", "approvals": 1}]'
