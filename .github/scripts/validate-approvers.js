@@ -1,0 +1,47 @@
+module.exports = async ({ github, context, core }) => {
+    const OWNER = context.repo.owner;
+    const REPO = context.repo.repo;
+    const PR_NUMBER = context.payload.pull_request.number;
+    const teams = JSON.parse(process.env.teams);
+
+    async function getTeamMembers(teamSlug) {
+      const members = await github.rest.teams.listMembersInOrg({
+        org: OWNER,
+        team_slug: teamSlug,
+      });
+      return members.data.map(member => member.login);
+    }
+
+    async function getPRReviews(prNumber) {
+      const reviews = await github.rest.pulls.listReviews({
+        owner: OWNER,
+        repo: REPO,
+        pull_number: prNumber,
+      });
+      return reviews.data.filter(review => review.state === 'APPROVED');
+    }
+
+    const reviews = await getPRReviews(PR_NUMBER);
+    let approvalCounts = {};
+    teams.forEach(team => {
+      approvalCounts[team.name] = 0;
+    });
+
+    for (const review of reviews) {
+      for (const team of teams) {
+        const members = await getTeamMembers(team.name);
+        if (members.includes(review.user.login)) {
+          approvalCounts[team.name]++;
+        }
+      }
+    }
+
+    for (const team of teams) {
+      const required = team.approvals;
+      const received = approvalCounts[team.name];
+      console.log(`Team: ${team.name}, Required: ${required}, Received: ${received}`);
+      if (received < required) {
+        core.setFailed(`Requires at least ${required} approvals from ${team.name}. Currently: ${received}`);
+      }
+    }
+  };
