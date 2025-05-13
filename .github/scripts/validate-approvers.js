@@ -2,11 +2,11 @@ module.exports = async ({ github, context, core }) => {
   const OWNER = context.repo.owner;
   const REPO = context.repo.repo;
   const PR_NUMBER = context.payload.pull_request.number;
-  const teams = JSON.parse(process.env.teams);
-  
+  const teamsConfig = JSON.parse(process.env.teams);
+
   console.log(`Debug - PR Number: ${PR_NUMBER}`);
-  console.log(`Debug - Teams config: ${JSON.stringify(teams)}`);
-  
+  console.log(`Debug - Teams config: ${JSON.stringify(teamsConfig)}`);
+
   async function getTeamMembers(teamSlug) {
     console.log(`Debug - Fetching members for team: ${teamSlug}`);
     try {
@@ -21,7 +21,7 @@ module.exports = async ({ github, context, core }) => {
       return [];
     }
   }
-  
+
   async function getPRReviews(prNumber) {
     console.log(`Debug - Fetching reviews for PR: ${prNumber}`);
     try {
@@ -30,38 +30,31 @@ module.exports = async ({ github, context, core }) => {
         repo: REPO,
         pull_number: prNumber,
       });
-      
+
       const approvedReviews = reviews.data.filter(review => review.state === 'APPROVED');
       console.log(`Debug - PR has ${reviews.data.length} reviews, ${approvedReviews.length} approved`);
-      
-      // Log all reviews for debugging
-      for (const review of reviews.data) {
-        console.log(`Debug - Review by ${review.user.login}, state: ${review.state}, submitted at: ${review.submitted_at}`);
-      }
-      
+
       return approvedReviews;
     } catch (error) {
       console.error(`Error fetching PR reviews:`, error.message);
       return [];
     }
   }
-  
+
   try {
     const reviews = await getPRReviews(PR_NUMBER);
     let approvalCounts = {};
-    teams.forEach(team => {
-      approvalCounts[team.name] = 0;
-    });
-    
-    // Store approvers by team for debugging
     let teamApprovers = {};
-    teams.forEach(team => {
-      teamApprovers[team.name] = [];
-    });
-    
-    for (const team of teams) {
+
+    for (const team of teamsConfig) {
+      const { name, approvals } = team;
+      approvalCounts[name] = 0;
+      teamApprovers[name] = [];
+    }
+
+    for (const team of teamsConfig) {
       const members = await getTeamMembers(team.name);
-      
+
       for (const review of reviews) {
         if (members.includes(review.user.login)) {
           approvalCounts[team.name]++;
@@ -69,14 +62,15 @@ module.exports = async ({ github, context, core }) => {
         }
       }
     }
-    
+
     console.log('Debug - Approval counts by team:');
-    for (const team of teams) {
-      const required = team.approvals;
-      const received = approvalCounts[team.name];
-      console.log(`Team: ${team.name}, Required: ${required}, Received: ${received}, Approvers: ${teamApprovers[team.name].join(', ')}`);
-      if (received < required) {
-        core.setFailed(`Requires at least ${required} approvals from ${team.name}. Currently: ${received}`);
+    for (const team of teamsConfig) {
+      const { name, approvals } = team;
+      const received = approvalCounts[name];
+      console.log(`Team: ${name}, Required: ${approvals}, Received: ${received}, Approvers: ${teamApprovers[name].join(', ')}`);
+
+      if (received < approvals) {
+        core.setFailed(`Requires at least ${approvals} approvals from ${name}. Currently: ${received}`);
       }
     }
   } catch (error) {
