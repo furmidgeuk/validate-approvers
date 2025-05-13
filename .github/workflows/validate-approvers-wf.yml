@@ -34,6 +34,5 @@ jobs:
         with:
           github-token: ${{ secrets.github-token }}
           script: |
-            const fs = require('fs');
             const validateApprovers = require('./.github/scripts/validate-approvers.js');
             await validateApprovers({ github, context, core });
