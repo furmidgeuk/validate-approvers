@@ -2,4 +2,4 @@ teams:
   - name: sme
     approvals: 1
   - name: quality
-    approvals: 0
+    approvals: 1
