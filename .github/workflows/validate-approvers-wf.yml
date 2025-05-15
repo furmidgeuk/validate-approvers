@@ -40,5 +40,5 @@ jobs:
       - name: Validate Approvers
         run: node .github/scripts/validate-approvers-test.js
         env:
-          PR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TOKEN: ${{ secrets.SAML_GITHUB_TOKEN }}
+          APP_TOKEN: ${{ secrets.SAML_GITHUB_TOKEN }}
