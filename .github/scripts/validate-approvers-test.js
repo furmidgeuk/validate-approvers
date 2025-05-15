@@ -8,14 +8,14 @@ const PR_NUMBER = github.context.payload.pull_request.number;
 const COMMENT_MARKER = `<!-- APPROVAL_SUMMARY_COMMENT -->`;
 const STAGE_MARKER = `<!-- APPROVAL_STAGE_MARKER -->`;
 const teamsConfig = JSON.parse(process.env.teams);
-const APP_TOKEN = process.env.APP_TOKEN;
-const PR_TOKEN = process.env.PR_TOKEN;
+const APP_TOKEN = process.env.GITHUB_TOKEN;
+const PR_TOKEN = process.env.GITHUB_TOKEN;
 
 console.log(`Debug - PR Number: ${PR_NUMBER}`);
 console.log(`Debug - Teams config: ${JSON.stringify(teamsConfig)}`);
 
-const appOctokit = new Octokit({ auth: GITHUB_TOKEN });
-const prOctokit = new Octokit({ auth: GITHUB_TOKEN });
+const appOctokit = new Octokit({ auth: APP_TOKEN });
+const prOctokit = new Octokit({ auth: PR_TOKEN });
 
 async function getTeamMembers(teamSlug) {
   try {
