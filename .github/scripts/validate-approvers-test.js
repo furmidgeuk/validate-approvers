@@ -14,8 +14,8 @@ const PR_TOKEN = process.env.PR_TOKEN;
 console.log(`Debug - PR Number: ${PR_NUMBER}`);
 console.log(`Debug - Teams config: ${JSON.stringify(teamsConfig)}`);
 
-const appOctokit = new Octokit({ auth: APP_TOKEN });
-const prOctokit = new Octokit({ auth: PR_TOKEN });
+const appOctokit = new Octokit({ auth: GITHUB_TOKEN });
+const prOctokit = new Octokit({ auth: GITHUB_TOKEN });
 
 async function getTeamMembers(teamSlug) {
   try {
