@@ -9,6 +9,9 @@ if (!PR_NUMBER) {
   core.setFailed("PR number not found. Ensure the workflow is triggered by a pull request event.");
   return;
 }
+console.log(`Debug - PR Number: ${PR_NUMBER}`);
+console.log(`Debug - Payload: ${JSON.stringify(github.context.payload, null, 2)}`);
+
 const COMMENT_MARKER = `<!-- APPROVAL_SUMMARY_COMMENT -->`;
 const STAGE_MARKER = `<!-- APPROVAL_STAGE_MARKER -->`;
 const teamsConfig = JSON.parse(process.env.teams);
