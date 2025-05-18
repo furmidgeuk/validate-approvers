@@ -10,6 +10,10 @@ on:
     secrets:
       github-token:
         required: true
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
 
 jobs:
   validate-approvers:
