@@ -4,7 +4,11 @@ const github = require('@actions/github');
 
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
-const PR_NUMBER = github.context.payload.pull_request.number;
+const PR_NUMBER = github.context.payload.pull_request?.number;
+if (!PR_NUMBER) {
+  core.setFailed("PR number not found. Ensure the workflow is triggered by a pull request event.");
+  return;
+}
 const COMMENT_MARKER = `<!-- APPROVAL_SUMMARY_COMMENT -->`;
 const STAGE_MARKER = `<!-- APPROVAL_STAGE_MARKER -->`;
 const teamsConfig = JSON.parse(process.env.teams);
