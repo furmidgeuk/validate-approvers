@@ -4,6 +4,12 @@ on:
   pull_request:
     types: [opened, reopened, ready_for_review]
 
+# Add permissions block to request necessary access levels
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   assign-reviewers:
     runs-on: ubuntu-latest
@@ -67,5 +73,28 @@ jobs:
                 });
               }
             } catch (error) {
-              console.log(`Error assigning reviewers: ${error.message}`);
+              console.error(`Error assigning reviewers: ${error.message}`);
+              // Log additional details to help troubleshoot
+              console.log(`Error details: ${JSON.stringify(error)}`);
+              
+              // Add a comment about the error but still try to add a label
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `⚠️ **Note**: Attempted to automatically assign reviewers, but encountered an issue. Please manually add the appropriate reviewers to this PR.\n\nIf this PR targets the SME-Approval branch, please add the SME team.\nIf this PR targets the main branch, please add the Quality team.`
+              });
+              
+              try {
+                // Still try to add the label
+                const label = targetBranch === 'SME-Approval' ? 'needs-sme-review' : 'needs-quality-review';
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  labels: [label]
+                });
+              } catch (labelError) {
+                console.error(`Error adding label: ${labelError.message}`);
+              }
             }
