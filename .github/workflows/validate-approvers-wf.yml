@@ -18,7 +18,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          
+      - name: Install Python YAML package
+        run: pip install pyyaml
+
+      - name: Read Config
+        id: read-config
+        run: |
+          python ./read-config.py ${{ inputs.config-path }}
+          echo "teams=$(cat teams.json)" >> $GITHUB_ENV    
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
