@@ -11,6 +11,7 @@ permissions:
   issues: write
 
 jobs:
+  jobs:
   assign-reviewers:
     runs-on: ubuntu-latest
     steps:
@@ -26,28 +27,30 @@ jobs:
             console.log(`PR #${prNumber} targets branch: ${targetBranch}`);
             
             let teamToAssign = '';
+
+            // Use the actual team slugs as per your organization
+            const smeTeamSlug = 'nn-datacore-it-sme';
+            const qualityTeamSlug = 'nn-datacore-qualification-team';
             
             if (targetBranch === 'SME-Approval') {
-              teamToAssign = 'sme';
-              console.log('Assigning SME team as reviewers');
+              teamToAssign = smeTeamSlug;
             } else if (targetBranch === 'main') {
-              teamToAssign = 'quality';
-              console.log('Assigning Quality team as reviewers');
-            } else {
+              teamToAssign = qualityTeamSlug;
+            }
+
+            if (!teamToAssign) {
               console.log(`No team assignments for target branch: ${targetBranch}`);
               return;
             }
-            
+
             try {
-              // Request team review
               await github.rest.pulls.requestReviewers({
                 owner,
                 repo,
                 pull_number: prNumber,
                 team_reviewers: [teamToAssign]
               });
-              
-              // Add a label based on the target branch
+
               const label = targetBranch === 'SME-Approval' ? 'needs-sme-review' : 'needs-quality-review';
               await github.rest.issues.addLabels({
                 owner,
@@ -55,46 +58,19 @@ jobs:
                 issue_number: prNumber,
                 labels: [label]
               });
-              
-              // Add a comment to explain the review process
-              let comment = '';
-              if (targetBranch === 'SME-Approval') {
-                comment = 'This PR requires 2 approvals from the SME team before it can be merged to the SME-Approval branch.';
-              } else if (targetBranch === 'main') {
-                comment = 'This PR requires approval from the Quality team before it can be merged to main.';
-              }
-              
-              if (comment) {
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: prNumber,
-                  body: comment
-                });
-              }
-            } catch (error) {
-              console.error(`Error assigning reviewers: ${error.message}`);
-              // Log additional details to help troubleshoot
-              console.log(`Error details: ${JSON.stringify(error)}`);
-              
-              // Add a comment about the error but still try to add a label
+
+              const comment = targetBranch === 'SME-Approval'
+                ? 'This PR requires 2 approvals from the SME team before it can be merged to the SME-Approval branch.'
+                : 'This PR requires approval from the Quality team before it can be merged to main.';
+
               await github.rest.issues.createComment({
                 owner,
                 repo,
                 issue_number: prNumber,
-                body: `⚠️ **Note**: Attempted to automatically assign reviewers, but encountered an issue. Please manually add the appropriate reviewers to this PR.\n\nIf this PR targets the SME-Approval branch, please add the SME team.\nIf this PR targets the main branch, please add the Quality team.`
+                body: comment
               });
-              
-              try {
-                // Still try to add the label
-                const label = targetBranch === 'SME-Approval' ? 'needs-sme-review' : 'needs-quality-review';
-                await github.rest.issues.addLabels({
-                  owner,
-                  repo,
-                  issue_number: prNumber,
-                  labels: [label]
-                });
-              } catch (labelError) {
-                console.error(`Error adding label: ${labelError.message}`);
-              }
+
+            } catch (error) {
+              console.error(`Error assigning reviewers: ${error.message}`);
+              console.log(`Error details: ${JSON.stringify(error)}`);
             }
