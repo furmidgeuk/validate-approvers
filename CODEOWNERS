@@ -1,5 +1,5 @@
 # Assign SME team for SME-Approval branch
-SME-Approval/* @furmidgeuk/sme
+SME-Approval/* @furmidgeuk/teams/sme
 
 # Assign QA team for QA-Approval branch
-QA-Approval/* @furmidgeuk/quality
+main/* @furmidgeuk/teams/quality
