@@ -1,0 +1,71 @@
+name: Auto Assign Reviewers
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  assign-reviewers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign team based on target branch
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.number;
+            const targetBranch = context.payload.pull_request.base.ref;
+            
+            console.log(`PR #${prNumber} targets branch: ${targetBranch}`);
+            
+            let teamToAssign = '';
+            
+            if (targetBranch === 'SME-Approval') {
+              teamToAssign = 'sme';
+              console.log('Assigning SME team as reviewers');
+            } else if (targetBranch === 'main') {
+              teamToAssign = 'quality';
+              console.log('Assigning Quality team as reviewers');
+            } else {
+              console.log(`No team assignments for target branch: ${targetBranch}`);
+              return;
+            }
+            
+            try {
+              // Request team review
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number: prNumber,
+                team_reviewers: [teamToAssign]
+              });
+              
+              // Add a label based on the target branch
+              const label = targetBranch === 'SME-Approval' ? 'needs-sme-review' : 'needs-quality-review';
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: [label]
+              });
+              
+              // Add a comment to explain the review process
+              let comment = '';
+              if (targetBranch === 'SME-Approval') {
+                comment = 'This PR requires 2 approvals from the SME team before it can be merged to the SME-Approval branch.';
+              } else if (targetBranch === 'main') {
+                comment = 'This PR requires approval from the Quality team before it can be merged to main.';
+              }
+              
+              if (comment) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: comment
+                });
+              }
+            } catch (error) {
+              console.log(`Error assigning reviewers: ${error.message}`);
+            }
