@@ -1,0 +1,46 @@
+name: Create Quality Review PR
+
+on:
+  push:
+    branches:
+      - SME-Approval
+
+jobs:
+  create-quality-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get merged PR title and description
+        id: pr-info
+        run: |
+          # Get the commit message of the merge commit
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          PR_TITLE="Quality Review: ${COMMIT_MSG%%\n'*}"
+          
+          # Save the entire message as PR body
+          echo "PR_TITLE<<EOF" >> $GITHUB_ENV
+          echo "$PR_TITLE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          echo "This PR contains changes that have been approved by the SME team.\n\n" >> $GITHUB_ENV
+          echo "Original commit message:\n\`\`\`\n$COMMIT_MSG\n\`\`\`" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+      - name: Create Pull Request to main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: quality-review
+          base: main
+          title: ${{ env.PR_TITLE }}
+          body: ${{ env.PR_BODY }}
+          labels: |
+            quality-review
+            automated-pr
+          draft: false
+          delete-branch: true
