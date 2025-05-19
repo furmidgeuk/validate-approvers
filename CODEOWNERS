@@ -1,5 +1,7 @@
-# Assign SME team for SME-Approval branch
-SME-Approval/* @furmidgeuk/teams/sme
+# SME team reviews all PRs to SME-Approval branch
 
-# Assign QA team for QA-Approval branch
-main/* @furmidgeuk/teams/quality
+# For files in the SME-Approval branch
+* @furmidgeuk/sme
+
+# For files in the main branch 
+* @furmidgeuk/quality
