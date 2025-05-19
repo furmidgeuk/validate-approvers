@@ -17,19 +17,13 @@ jobs:
       - name: Get merged PR title and description
         id: pr-info
         run: |
-          # Get the commit message of the merge commit
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          PR_TITLE="Quality Review: ${COMMIT_MSG%%\n'*}"
-          
+          PR_TITLE="Quality Review: ${COMMIT_MSG%%$'\n'*}"
+
           # Save the entire message as PR body
-          echo "PR_TITLE<<EOF" >> $GITHUB_ENV
-          echo "$PR_TITLE" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          
-          echo "PR_BODY<<EOF" >> $GITHUB_ENV
-          echo "This PR contains changes that have been approved by the SME team.\n\n" >> $GITHUB_ENV
-          echo "Original commit message:\n\`\`\`\n$COMMIT_MSG\n\`\`\`" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_ENV
+          echo "PR_BODY=This PR contains changes that have been approved by the SME team.\n\nOriginal commit message:\n\`\`\`\n${COMMIT_MSG}\n\`\`\`" >> $GITHUB_ENV
+
           
       - name: Create Pull Request to main
         uses: peter-evans/create-pull-request@v5
