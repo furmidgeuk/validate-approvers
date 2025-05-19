@@ -18,21 +18,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20'
 
-      - name: Install Python YAML package
-        run: pip install pyyaml
-      
-      - name: Read Config
-        run: python ./read-config.py ${{ inputs.config-path }}
-
-      - name: Debug Config
-        run: |
-          echo  ${{ env.teams }}
+      - name: Install dependencies
+        run: npm install @actions/core @actions/github @octokit/rest
 
       - name: Validate Approvers
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.github-token }}
-          script: |
-            const validateApprovers = require('./.github/scripts/validate-approvers.js');
-            await validateApprovers({ github, context, core });
+        run: node .github/scripts/validate-approvers-test.js
+        env:
+          PR_TOKEN: ${{ secrets.github-token }}
+

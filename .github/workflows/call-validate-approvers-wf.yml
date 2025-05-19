@@ -2,8 +2,18 @@ name: Validate PR Approvers
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
-
+    branches:
+      - SME-Approval
+      - QA-Approval
+    types:
+      - opened
+      - reopened
+      - synchronize
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  
 jobs:
   call-validate-approvers:
     uses: ./.github/workflows/validate-approvers-wf.yml
